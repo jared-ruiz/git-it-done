@@ -1,11 +1,34 @@
 //querySelectors
 var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
+var repoNameEl = document.querySelector("#repo-name");
+
+//retrieves querystring search info ex:(?repo=jared-ruiz/Calendat-App)
+var getRepoName = function() {
+    //grab repo name from url queryString
+    var queryString = document.location.search;
+    // console.log(queryString);
+    
+    //split the string from the "=" sign to form the array, take the right side of the split aka(reponame)
+    //isolate repo name into variable
+    var repoName = queryString.split("=")[1];
+    
+    if (repoName) {
+        //display repo name on the page
+        repoNameEl.textContent = repoName;
+        //fetch call
+        getRepoIssues(repoName);
+    }
+    else {
+        //if no repo was given, redirect to the homepage
+        document.location.replace("./index.html");
+    }
+}
 
 //fetch request for repo issues
 var getRepoIssues = function(repo) {
     var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
-
+    
     fetch(apiUrl).then(function(response) {
         //request was successful
         if (response.ok) {
@@ -13,7 +36,7 @@ var getRepoIssues = function(repo) {
                 
                 //pass response data to dom function
                 displayIssues(data);
-
+                
                 //check if api has paginated issues (more than 30 that can display)
                 if (response.headers.get("Link")) {
                     displayWarning(repo);
@@ -21,7 +44,8 @@ var getRepoIssues = function(repo) {
             });
         }
         else {
-            alert("There was a problem with your request!");
+            //return user to homepage if not successful
+            document.location.replace("./index.html");
         }
     });
 }
@@ -88,5 +112,4 @@ var displayWarning = function(repo) {
     limitWarningEl.appendChild(linkEl);
 }
 
-//pass {owner}/{repo name}
-getRepoIssues("facebook/react");
+getRepoName();
